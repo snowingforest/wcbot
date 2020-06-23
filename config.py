@@ -2,18 +2,17 @@ from nonebot.default_config import *
 import re
 
 
-SUPERUSERS = {463725434}
+SUPERUSERS = {}
 COMMAND_START = ['', re.compile(r'[/!]+')]
 HOST = '127.0.0.1'
 PORT = 8080
-DB_HOST = 'localhost'
+DB_HOST = ''
 DB_PORT = 3306
-DB_USER = 'root'
-DB_PWD = 't3z7e4h8'
-#GROUP = 1107054970
-GROUP = 1049179419
-ADMIN = {463725434, 1604776795}
-NON_DEFAULT_PLUGINS = {'wcj.plugins.wodi', 'wcj.plugins.teamfight', 'wcj.plugins.gacha_all'}
+DB_USER = ''
+DB_PWD = ''
+GROUP = 
+ADMIN = {}
+NON_DEFAULT_PLUGINS = {}
 HORSE = '[CQ:emoji,id=128052]'
 HORSE_SKIN = {'哈哈剑': '[CQ:face,id=13]',
               '镜华': '[CQ:emoji,id=128167]',
