@@ -306,12 +306,12 @@ class HorseRace:
             cursor.execute(sql)
         elif horse[1] == "初音":
             response = "%s号马%s的%s使用了【流星☆】！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
-            damage_fix = 0
             horse_list = await self.search_horse()
             for target_horse in horse_list:
                 if target_horse[0] != horse[0]:
+                    damage_fix = 0
                     if target_horse[5] > 0:
-                        damage_fix = 2
+                        damage_fix = 3
                     move = calculate_damage(horse[6], target_horse[8], damage_fix)
                     if move == 0:
                         response += "%s鸽了\n" % horse[1]
@@ -356,7 +356,7 @@ class HorseRace:
             cursor.execute(sql)
         elif horse[1] == "望":
             response = "%s号马%s的%s使用了【Live-Onstage】！自己的双防提升了！自己的攻击提升了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
-            sql = "update horse set current_tp = 0, def = 10, sdef = 7, atk = 8 where id = %s" % horse[0]
+            sql = "update horse set current_tp = 0, def = 10, sdef = 6, atk = 8 where id = %s" % horse[0]
             cursor.execute(sql)
         elif horse[1] == "扇子":
             response = "%s号马%s的%s使用了【忍法灼热地狱】！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
@@ -502,7 +502,7 @@ class HorseRace:
             cursor.execute(sql)
         elif horse[1] == "茜里":
             response = "%s号马%s的%s使用了【甜蜜恶魔的声援】！魔法攻击上升了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
-            damage_fix = 0
+            damage_fix = 1
             target_horse = await self.get_single_target(horse)
             move = 0
             if target_horse[0] != horse[0]:
@@ -705,7 +705,7 @@ class HorseRace:
         elif horse[1] == "空花":
             response = "%s号马%s的%s使用了【神魂颠倒】！自己的双防上升了！向前冲了2步！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
             position = min(10, horse[3] + 2)
-            sql = "update horse set current_tp = 0, def = 6, sdef = 13, position = %s where id = %s" % (position, horse[0])
+            sql = "update horse set current_tp = 0, def = 5, sdef = 13, position = %s where id = %s" % (position, horse[0])
             cursor.execute(sql)
         elif horse[1] == "珠希":
             response = "%s号马%s的%s使用了【猫猫决胜爪】！目标的tp减少了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
@@ -730,7 +730,7 @@ class HorseRace:
             cursor.execute(sql)
         elif horse[1] == "子龙":
             response = "%s号马%s的%s使用了【飞跃枪闪】！自己的物防提升了！自己的物攻提升了！自己的tp上升提升了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
-            damage_fix = 2
+            damage_fix = 0
             target_horse = await self.get_single_target(horse)
             move = 0
             if target_horse[0] != horse[0]:
@@ -743,7 +743,7 @@ class HorseRace:
             target_position = max(1, target_horse[3] - move)
             sql = "update horse set position = %s where id = %s" % (target_position, target_horse[0])
             cursor.execute(sql)
-            sql = "update horse set current_tp = 0, atk = atk + 1, def = 9, tp = tp + 1 where id = %s" % horse[0]
+            sql = "update horse set current_tp = 0, atk = atk + 1, def = 8, tp = tp + 1 where id = %s" % horse[0]
             cursor.execute(sql)
         elif horse[1] == "深月":
             response = "%s号马%s的%s使用了【血色蔷薇】！其它角色的物防下降了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
@@ -785,6 +785,16 @@ class HorseRace:
             sql = "update horse set position = %s where id = %s" % (target_position, target_horse[0])
             cursor.execute(sql)
             sql = "update horse set current_tp = 0 where id = %s" % horse[0]
+            cursor.execute(sql)
+        elif horse[1] == "美里":
+            response = "%s号马%s的%s使用了【姐妹互助】！向前冲了一步！自己的魔攻上升了！自己的魔防上升了！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])
+            horse_list = await self.search_horse()
+            for target_horse in horse_list:
+                if target_horse[0] != horse[0]:
+                    sql = "update horse set atk = atk - 1 where id = %s" % target_horse[0]
+                    cursor.execute(sql)
+            position = min(10, horse[3] + 1)
+            sql = "update horse set current_tp = 0, position = %s, satk = 8, def = 3, sdef = 5 where id = %s" % (position, horse[0])
             cursor.execute(sql)
         else:
             response = "%s号马%s的%s使用了【白板ub】！\n" % (horse[0], await get_nick_name(group_id, horse[2]), horse[1])

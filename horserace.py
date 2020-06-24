@@ -64,11 +64,16 @@ async def join_wcr_horserace(session: CommandSession):
                         horse_name = input_name
                     chara = await wcr_data.search_chara(session.ctx['user_id'], horse_name)
                     if chara:
-                        response = "%s派出了%s进行赛马!" % (get_valid_name(session.ctx['sender']['card'], session.ctx['sender']['nickname']), horse_name)
-                        await hr.add_horse(chara)
-                        horse_list = await hr.search_horse()
-                        if len(horse_list) >= 4:
-                            await end_join(session.ctx['group_id'])
+                        stars = await wcr_data.get_chara_stars(session.ctx['user_id'], horse_name)
+                        original_stars = stars - chara[3]
+                        if original_stars > 1:
+                            response = "%s派出了%s进行赛马!" % (get_valid_name(session.ctx['sender']['card'], session.ctx['sender']['nickname']), horse_name)
+                            await hr.add_horse(chara)
+                            horse_list = await hr.search_horse()
+                            if len(horse_list) >= 4:
+                                await end_join(session.ctx['group_id'])
+                        else:
+                            response = "目前版本1星马不能出战"
                     else:
                         response = "您没有叫做%s的角色。输入【wcr查看】看看自己有哪些3星吧！" % input_name
                 else:
