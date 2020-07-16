@@ -83,7 +83,7 @@ async def wcr_revive(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr升星', only_to_me=False)
+@on_command('wcr升星', aliases='升星', only_to_me=False)
 async def wcr_increase_stars(session: CommandSession):
     wcr_data = Wcr()
     result = await wcr_data.search_player(session.ctx['user_id'])
@@ -153,7 +153,7 @@ async def wcr_search(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr单抽', only_to_me=False)
+@on_command('wcr单抽', aliases='单抽', only_to_me=False)
 async def wcr_gacha_single(session: CommandSession):
     wcr_data = Wcr()
     result = await wcr_data.search_player(session.ctx['user_id'])
@@ -180,7 +180,7 @@ async def wcr_gacha_single(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr十连', only_to_me=False)
+@on_command('wcr十连', aliases='十连', only_to_me=False)
 async def wcr_gacha_ten(session: CommandSession):
     wcr_data = Wcr()
     result = await wcr_data.search_player(session.ctx['user_id'])
@@ -237,7 +237,7 @@ async def wcr_gacha_ten(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr傻必', only_to_me=False)
+@on_command('wcr傻必', aliases='傻必', only_to_me=False)
 async def wcr_gacha_sb(session: CommandSession):
     wcr_data = Wcr()
     result = await wcr_data.search_player(session.ctx['user_id'])
@@ -265,7 +265,7 @@ async def wcr_gacha_sb(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr抽井', only_to_me=False)
+@on_command('wcr抽井', aliases='抽井', only_to_me=False)
 async def wcr_gacha_300(session: CommandSession):
     wcr_data = Wcr()
     result = await wcr_data.search_player(session.ctx['user_id'])
@@ -320,7 +320,7 @@ async def wcr_gacha_300(session: CommandSession):
     await session.send(response)
 
 
-@on_command('wcr卡池', only_to_me=False)
+@on_command('wcr卡池', aliases='卡池', only_to_me=False)
 async def wcr_card_pool(session: CommandSession):
     g = Gacha()
     list_1 = g.up_1

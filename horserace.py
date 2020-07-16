@@ -35,11 +35,51 @@ async def wcr_horserace(session: CommandSession):
 async def end_wcr_horserace(session: CommandSession):
     hr = HorseRace()
     state = await hr.race_state()
-    if session.ctx['user_id'] == 463725434 and state != -1:
+    if session.ctx['user_id'] == 463725434:
         response = "赛马结束了！"
         await hr.end_race()
     else:
         response = "无法结束赛马！"
+    await session.send(response)
+
+
+@on_command('模拟赛马', only_to_me=False)
+async def mock_horserace(session: CommandSession):
+    hr = HorseRace()
+    wcr_data = Wcr()
+    cost = 1500
+    player = await wcr_data.search_player(session.ctx['user_id'])
+    state = await hr.race_state()
+    if state == -1:
+        if player and player[1] >= cost:
+            input_list = session.current_arg_text.strip().split(' ')
+            if input_list and len(input_list) == 4:
+                nickname_dict = await get_nickname_dict()
+                for input_name in input_list:
+                    if input_name in nickname_dict.keys():
+                        horse_name = nickname_dict[input_name]
+                    else:
+                        horse_name = input_name
+                    chara = await hr.get_chara_data(horse_name)
+                    if chara:
+                        horse = (0, horse_name, session.ctx['user_id'])
+                        await hr.add_horse(horse)
+                        horse_list = await hr.search_horse()
+                        if len(horse_list) >= 4:
+                            response = '模拟赛马即将开始！系统自动扣除1500宝石作为模拟费用！'
+                            await wcr_data.update_player_info(player[0], player[1] - cost, player[2], player[3])
+                            await hr.set_state(0)
+                            await end_join(session.ctx['group_id'])
+                    else:
+                        response = "无法识别角色名%s" % input_name
+                        await hr.end_race()
+                        break
+            else:
+                response = "参数错误。请输入要出马的4个角色并用空格分隔。"
+        else:
+            response = "您尚未加入wcr或者没钱，无法模拟赛马"
+    else:
+        response = "已有正在进行的赛马！"
     await session.send(response)
 
 
@@ -64,16 +104,11 @@ async def join_wcr_horserace(session: CommandSession):
                         horse_name = input_name
                     chara = await wcr_data.search_chara(session.ctx['user_id'], horse_name)
                     if chara:
-                        stars = await wcr_data.get_chara_stars(session.ctx['user_id'], horse_name)
-                        original_stars = stars - chara[3]
-                        if original_stars > 1:
-                            response = "%s派出了%s进行赛马!" % (get_valid_name(session.ctx['sender']['card'], session.ctx['sender']['nickname']), horse_name)
-                            await hr.add_horse(chara)
-                            horse_list = await hr.search_horse()
-                            if len(horse_list) >= 4:
-                                await end_join(session.ctx['group_id'])
-                        else:
-                            response = "目前版本1星马不能出战"
+                        response = "%s派出了%s进行赛马!" % (get_valid_name(session.ctx['sender']['card'], session.ctx['sender']['nickname']), horse_name)
+                        await hr.add_horse(chara)
+                        horse_list = await hr.search_horse()
+                        if len(horse_list) >= 4:
+                            await end_join(session.ctx['group_id'])
                     else:
                         response = "您没有叫做%s的角色。输入【wcr查看】看看自己有哪些3星吧！" % input_name
                 else:
@@ -91,7 +126,7 @@ async def join_wcr_horserace_gamble(session: CommandSession):
     wcr_data = Wcr()
     player = await wcr_data.search_player(session.ctx['user_id'])
     state = await hr.race_state()
-    if state == -2:
+    if state == 1:
         cost = 100
         if player and player[1] >= cost:
             horse_id = session.current_arg_text.strip()
@@ -100,7 +135,7 @@ async def join_wcr_horserace_gamble(session: CommandSession):
                 result = await hr.join_gamble(session.ctx['user_id'], int(horse_id))
                 if result == 1:
                     response = "%s下注了%s号马！" % (get_valid_name(session.ctx['sender']['card'], session.ctx['sender']['nickname']), int(horse_id))
-                    await wcr_data.update_player_info(player[0], player[1] - 100, player[2], player[3])
+                    await wcr_data.update_player_info(player[0], player[1] - cost, player[2], player[3])
                 else:
                     response = "您已经下过注了"
             else:
@@ -149,7 +184,7 @@ async def start_gamble(group_id):
     hr = HorseRace()
     horse_list = await hr.search_horse()
     if len(horse_list) <= 4:
-        await hr.set_state(-2)
+        await hr.set_state(1)
         response = ""
         for horse in horse_list:
             if horse[1] in HORSE_SKIN.keys():
@@ -169,12 +204,6 @@ async def start_gamble(group_id):
             args=(group_id,),
             misfire_grace_time=60,
         )
-        scheduler.add_job(
-            func=hr.set_state,
-            trigger=trigger,
-            args=(1,),
-            misfire_grace_time=60,
-        )
     else:
         response = "检测到马数异常，赛马强制结束！"
         await bot.send_group_msg(group_id=group_id, message=response)
@@ -185,10 +214,7 @@ async def start_game(group_id):
     bot = nonebot.get_bot()
     hr = HorseRace()
     state = await hr.race_state()
-    if state <= 1:
-        current_round = 1
-    else:
-        current_round = state
+    current_round = state
     response = "行动阶段#%s\n" % current_round
     horse_list = await hr.search_horse()
     for horse in horse_list:
@@ -232,27 +258,26 @@ async def start_game(group_id):
         await resolve_gamble(group_id, champ_list)
         await hr.end_race()
     else:
-        state = await hr.race_state()
-        if state != -1:
-            await hr.set_state(max(2, current_round + 1))
-            delta = datetime.timedelta(seconds=10)
-            trigger = DateTrigger(
-                run_date=datetime.datetime.now() + delta
-            )
-            scheduler.add_job(
-                func=start_game,
-                trigger=trigger,
-                args=(group_id,),
-                misfire_grace_time=60,
-            )
+        await hr.set_state(current_round + 1)
+        delta = datetime.timedelta(seconds=10)
+        trigger = DateTrigger(
+            run_date=datetime.datetime.now() + delta
+        )
+        scheduler.add_job(
+            func=start_game,
+            trigger=trigger,
+            args=(group_id,),
+            misfire_grace_time=60,
+        )
 
 
 async def resolve_gamble(group_id, champ_list):
     bot = nonebot.get_bot()
     hr = HorseRace()
     wcr_data = Wcr()
+    cost = 100
     gamble_player_list = await hr.search_gamble()
-    pool = 100 * len(gamble_player_list)
+    pool = cost * len(gamble_player_list)
     win_player_list = list()
     response = "赌马获胜的玩家是:\n"
     for horse in champ_list:
