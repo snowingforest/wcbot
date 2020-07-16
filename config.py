@@ -9,10 +9,10 @@ PORT = 8080
 DB_HOST = 'localhost'
 DB_PORT = 3306
 DB_USER = 'root'
-DB_PWD = 't3z7e4h8'
+DB_PWD = ''
 #GROUP = 1107054970
-GROUP = 1049179419
-ADMIN = {463725434, 1604776795, 1247183411}
+GROUP = 123
+ADMIN = {}
 NON_DEFAULT_PLUGINS = {'wcj.plugins.wodi',
                        'wcj.plugins.gacha_all',
                        # 'wcj.plugins.wcr',
